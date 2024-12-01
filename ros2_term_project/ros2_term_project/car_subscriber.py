@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from car_interface.msg import Car
 from geometry_msgs.msg import Twist
 import time
 
@@ -10,13 +10,12 @@ class CarSubscriber(Node):
     def __init__(self):
         super().__init__('car_subscriber')
 
-
-        self.subscription = self.create_subscription(
-            String,
+        self.subscription_ = self.create_subscription(
+            Car,
             'start_car',
-            self.listener_callback,
+            self.car_info_listener_callback,
             10)
-        self.subscription
+        self.subscription_
 
         self.twist_publisher_ = None
 
@@ -29,11 +28,23 @@ class CarSubscriber(Node):
         # 정지선 종류 구분
         self.count = 0
 
+    def car_info_listener_callback(self, msg: Car):
+        # 지정 차량
+        car = msg.car
+        self.get_logger().info('I heard: "%s"' % msg.car)
 
-    def listener_callback(self, msg):
-        car = msg.data
-        self.get_logger().info('I heard: "%s"' % msg.data)
         time.sleep(5)
+
+        # 차량에 속도 정보를 전달할 publisher
+        self.twist_publisher_ = self.create_publisher(Twist, '/demo/' + car + '_cmd_demo', 10)
+
+        # 차량 출발
+        twist = Twist()
+        for i in range(200):
+            twist.linear.x = 6.0
+            self.twist_publisher_.publish(twist)
+            time.sleep(0.01)
+
 
 def main(args=None):
     rclpy.init(args=args)

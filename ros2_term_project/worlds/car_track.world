@@ -8,7 +8,7 @@
 -->
 
 
-<model name="ground">
+    <model name="ground">
       <pose>75 -41.8 0 0 0 1.57</pose>
       <static>1</static>
       <link name="ground">
@@ -43,6 +43,8 @@
     <include>
       <uri>model://sun</uri>
     </include>
+
+
 
     <model name="moving_box">
       <pose>33 -64 0.5 0 0 0</pose>

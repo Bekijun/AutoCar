@@ -26,6 +26,8 @@ setup(
         'console_scripts': [
             'start=ros2_term_project.car_publisher:main',
             'sub=ros2_term_project.car_subscriber:main',
+            'state=ros2_term_project.state:main',
+            'line_follower = ros2_term_project.line_follower:main',
         ],
     },
 )

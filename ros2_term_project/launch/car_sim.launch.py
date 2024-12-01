@@ -16,9 +16,10 @@
 #
 
 import os
+import sys
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, TimerAction
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 import json
@@ -39,7 +40,7 @@ def generate_launch_description():
     world = os.path.join(get_package_share_directory('ros2_term_project'),
                          'worlds', world_file_name)
     print('world file name = %s' % world)
-    # ld = LaunchDescription()
+
     declare_argument = DeclareLaunchArgument(
         'use_sim_time',
         default_value='false',
@@ -47,7 +48,20 @@ def generate_launch_description():
 
     gazebo_run = ExecuteProcess(
         cmd=['gazebo', '-s', 'libgazebo_ros_factory.so', world],
-        output='screen')
+        output='screen'
+    )
+
+    spawn_car = TimerAction(
+        period=5.0,  # 5초 대기
+        actions=[
+            ExecuteProcess(
+                cmd=['python3', os.path.join(os.path.expanduser('~'),
+                                             'Ros2Projects/oom_ws/src/ros2_term_project/test/spawn_car.py')],
+                cwd=os.path.expanduser('~/Ros2Projects/oom_ws/src/ros2_term_project/test'),
+                output='screen'
+            )
+        ]
+    )
 
     start = Node(
         package='ros2_term_project',
@@ -64,11 +78,28 @@ def generate_launch_description():
         output='screen'
     )
 
+    state = Node(
+        package='ros2_term_project',
+        executable='state',
+        name='state',
+        output='screen'
+    )
+
+    line_follower = Node(
+        package='ros2_term_project',
+        executable='line_follower',
+        name='line_follower',
+        output='screen'
+    )
+
+    ld = LaunchDescription()
     ld.add_action(declare_argument)
     ld.add_action(gazebo_run)
+    ld.add_action(spawn_car)
     ld.add_action(start)
     ld.add_action(sub)
+    ld.add_action(state)
+    ld.add_action(line_follower)
 
-    # spawn prius_hybrid
 
     return ld
