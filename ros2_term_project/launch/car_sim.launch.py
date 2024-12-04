@@ -56,7 +56,7 @@ def generate_launch_description():
         actions=[
             ExecuteProcess(
                 cmd=['python3', os.path.join(os.path.expanduser('~'),
-                                             'Ros2Projects/oom_ws/src/ros2_term_project/test/spawn_car.py')],
+                                             'Ros2Projects/oom_ws/src/ros2_term_project/test/spawn_car.py'), car],
                 cwd=os.path.expanduser('~/Ros2Projects/oom_ws/src/ros2_term_project/test'),
                 output='screen'
             )
