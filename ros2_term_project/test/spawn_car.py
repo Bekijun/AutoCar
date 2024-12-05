@@ -15,7 +15,7 @@ car_id = sys.argv[1]
 
 # car_id에 따라 스폰할 엔티티 결정
 if car_id == "PR001":
-    os.system(f"ros2 run gazebo_ros spawn_entity.py -file {model1_path} -entity PR001 -x 93 -y -11.7 -Y -1.57")
+    os.system(f"ros2 run gazebo_ros spawn_entity.py -file {model1_path} -entity PR001 -x 80 -y -11.7 -Y -1.57")
 elif car_id == "PR002":
     os.system(f"ros2 run gazebo_ros spawn_entity.py -file {model2_path} -entity PR002 -x 93 -y -15.9 -Y -1.57")
 else:

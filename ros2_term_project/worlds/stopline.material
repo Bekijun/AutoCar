@@ -1,0 +1,16 @@
+material stopline
+{
+  receive_shadows on
+  technique
+  {
+    pass
+    {
+      ambient 1.0 1.0 1.0 1.0
+      texture_unit
+      {
+        texture ./stop_line.png
+        scale 1 0.2  <!-- 스케일 조정 -->
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <model name="PR002">
+  <model name="PR001">
     <link name="chassis">
       <inertial>
         <mass>1326.0</mass>
@@ -526,16 +526,12 @@
       </physics>
     </joint>
 
-    <model name="prius_hybrid_custom">
-      <link name="base_link">
-
-        <!-- Ackermann 플러그인 추가 -->
-        <plugin name="PR001_ackermann_steering" filename="libackermann_plugin.so">
+        <plugin name="PR002_ackermann_drive" filename="libgazebo_ros_ackermann_drive.so">
           <ros>
               <namespace>demo</namespace>
-              <remapping>cmd_vel:=PR001_cmd_demo</remapping>
-              <remapping>odom:=PR001_odom_demo</remapping>
-              <remapping>distance:=PR001_distance_demo</remapping>
+              <remapping>cmd_vel:=/demo/PR002_cmd_demo</remapping>
+              <remapping>odom:=PR002_odom_demo</remapping>
+              <remapping>distance:=PR002_distance_demo</remapping>
           </ros>
             <update_rate>100.0</update_rate>
             <front_left_joint>front_left_combined_joint</front_left_joint>
@@ -545,7 +541,9 @@
             <left_steering_joint>front_left_combined_joint</left_steering_joint>
             <right_steering_joint>front_right_combined_joint</right_steering_joint>
             <steering_wheel_joint>steering_joint</steering_wheel_joint>
+
             <max_steer>0.6458</max_steer>
+
             <max_steering_angle>7.85</max_steering_angle>
             <max_speed>6</max_speed>
             <left_steering_pid_gain>1500 0 1</left_steering_pid_gain>
@@ -561,12 +559,11 @@
             <odometry_frame>odom_demo</odometry_frame>
             <robot_base_frame>chassis</robot_base_frame>
         </plugin>
-      </link>
-    </model>
+
 
 
    <!-- Front Camera (Single Camera Setup with Wide FOV) -->
-<link name="camera_link_front">
+<link name="camera_link">
     <pose>0.16 -2.3 0.65 0 0 -1.5708</pose> <!-- Position on the left side of the car -->
     <visual name="visual">
         <geometry>
@@ -577,7 +574,7 @@
     </visual>
 </link>
 
-<link name="camera_rgb_optical_frame_front">
+<link name="camera_rgb_optical_frame">
     <inertial>
         <pose>0 0 0 0 0 0</pose>
         <inertia>
@@ -594,12 +591,12 @@
     <!-- 카메라의 optical frame 위치 -->
      <pose>0.16 -2.3 0.65 0 0 -1.5708</pose>
 
-    <sensor name="PR001_camera" type="camera">
+    <sensor name="camera2" type="camera">
         <always_on>true</always_on>
         <visualize>true</visualize>
         <update_rate>20</update_rate>
 
-        <camera name="front_camera">
+        <camera name="picam">
             <!-- 카메라의 수평 시야각을 확대 -->
             <horizontal_fov>2.0</horizontal_fov> <!-- 90도 정도 -->
             <image>
@@ -619,26 +616,26 @@
             </noise>
         </camera>
 
-        <plugin name="camera_driver_front" filename="libgazebo_ros_camera.so">
+        <plugin name="camera_driver" filename="libgazebo_ros_camera.so">
             <ros>
-                <namespace>PR001_camera</namespace>
+                <remapping>image_raw:=image_demo</remapping>
             </ros>
         </plugin>
     </sensor>
 </link>
 
-<joint name="camera_joint_front" type="fixed">
+<joint name="camera_joint" type="fixed">
     <parent>chassis</parent>
-    <child>camera_link_front</child>
+    <child>camera_link</child>
     <pose>0 0 0 0 0 0</pose>
     <axis>
         <xyz>0 0 1</xyz>
     </axis>
 </joint>
 
-<joint name="camera_rgb_joint_front" type="fixed">
-    <parent>camera_link_front</parent>
-    <child>camera_rgb_optical_frame_front</child>
+<joint name="camera_rgb_joint" type="fixed">
+    <parent>camera_link</parent>
+    <child>camera_rgb_optical_frame</child>
     <pose>0 0 0 0 0 0</pose>
     <axis>
         <xyz>0 0 1</xyz>

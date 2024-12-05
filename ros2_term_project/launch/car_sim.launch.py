@@ -71,17 +71,11 @@ def generate_launch_description():
         output='screen'
     )
 
-    sub = Node(
+    controller = Node(
         package='ros2_term_project',
-        executable='car_subscriber',
-        name='sub',
-        output='screen'
-    )
-
-    state = Node(
-        package='ros2_term_project',
-        executable='state',
-        name='state',
+        executable='controller',
+        name='controller',
+        arguments=[car],
         output='screen'
     )
 
@@ -89,6 +83,7 @@ def generate_launch_description():
         package='ros2_term_project',
         executable='line_follower',
         name='line_follower',
+        arguments=[car],
         output='screen'
     )
 
@@ -97,8 +92,7 @@ def generate_launch_description():
     ld.add_action(gazebo_run)
     ld.add_action(spawn_car)
     ld.add_action(start)
-    ld.add_action(sub)
-    ld.add_action(state)
+    ld.add_action(controller)
     ld.add_action(line_follower)
 
 
