@@ -5,85 +5,78 @@ import numpy as np
 class LineTracker:
     def __init__(self):
         self._delta = 0.0
-        self.left_to_center_dist = None  # 왼쪽 차선과 중앙값 간의 거리
-        self.right_to_center_dist = None  # 오른쪽 차선과 중앙값 간의 거리
+        self.prev_center = None  # 이전 중앙값
 
     def process(self, img: np.ndarray) -> None:
         h, w, _ = img.shape
 
-        # HSV 변환 및 흰색 차선 마스크 생성 (HSV 범위 확대)
+        # 흰색 차선 마스크 생성
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        lower_white = np.array([0, 0, 130])  # 흰색 감지 범위 - 하한값 조정 (기존 150에서 130으로)
-        upper_white = np.array([180, 70, 255])  # 상한값 조정 (기존 60에서 70으로)
-        mask = cv2.inRange(hsv, lower_white, upper_white)
+        lower_white = np.array([0, 0, 200])
+        upper_white = np.array([180, 25, 255])
+        msk = cv2.inRange(hsv, lower_white, upper_white)
 
-        # 관심 영역 (ROI) 설정 - 이미지 하단 1.5/3 영역만 사용
-        roi_top = int(h * 1.3 / 3)
-        mask[:roi_top, :] = 0
+        # 관심 영역 설정
+        roi_top = int(h * 2.0 / 3)
+        msk[:roi_top, :] = 0
 
-        # 양쪽을 각각 5%씩 잘라내고 중앙 90%만 사용
-        left_crop = int(w * 0.05)  # 왼쪽 5% 잘라내기 (기존 10%에서 감소)
-        right_crop = int(w * 0.95)  # 오른쪽 5% 잘라내기 (기존 10%에서 감소)
-        mask[:, :left_crop] = 0  # 왼쪽 영역 자르기
-        mask[:, right_crop:] = 0  # 오른쪽 영역 자르기
-
-        # 열림 연산을 통해 작은 노이즈 제거
+        # 열림 연산으로 작은 노이즈 제거
         kernel = np.ones((5, 5), np.uint8)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        msk = cv2.morphologyEx(msk, cv2.MORPH_OPEN, kernel)
 
-        # Hough Line Transform을 사용하여 선 감지
-        lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=50, minLineLength=50, maxLineGap=150)
+        # Hough Transform으로 차선 감지
+        lines = cv2.HoughLinesP(msk, 1, np.pi / 180, threshold=80, minLineLength=50, maxLineGap=30)
 
-        left_lines = []
-        right_lines = []
+        left_line_xs = []
+        right_line_xs = []
 
         if lines is not None:
             for line in lines:
                 for x1, y1, x2, y2 in line:
-                    slope = (y2 - y1) / (x2 - x1 + 1e-6)  # 기울기 계산
-                    if slope < -0.5:  # 왼쪽 차선
-                        left_lines.append((x1, y1, x2, y2))
-                    elif slope > 0.5:  # 오른쪽 차선
-                        right_lines.append((x1, y1, x2, y2))
+                    if x1 < w / 2 and x2 < w / 2:  # 왼쪽 차선
+                        left_line_xs.extend([x1, x2])
+                    elif x1 > w / 2 and x2 > w / 2:  # 오른쪽 차선
+                        right_line_xs.extend([x1, x2])
 
-        # 차선 중심 계산
-        left_center = np.mean([line[0] for line in left_lines] + [line[2] for line in left_lines]) if left_lines else None
-        right_center = np.mean([line[0] for line in right_lines] + [line[2] for line in right_lines]) if right_lines else None
-
+        # 차선 중앙 계산
+        left_cx = np.mean(left_line_xs) if left_line_xs else None
+        right_cx = np.mean(right_line_xs) if right_line_xs else None
         lane_center = None
 
-        if left_center is not None and right_center is not None:
-            # 두 차선을 모두 인식할 때 중앙값 계산 및 거리 저장
-            lane_center = (left_center + right_center) / 2
-            self.left_to_center_dist = lane_center - left_center
-            self.right_to_center_dist = right_center - lane_center
-        elif left_center is not None and self.right_to_center_dist is not None:
-            # 오른쪽 차선이 없을 때 왼쪽 차선과의 거리로 중앙값 예측
-            lane_center = left_center + self.left_to_center_dist
-        elif right_center is not None and self.left_to_center_dist is not None:
-            # 왼쪽 차선이 없을 때 오른쪽 차선과의 거리로 중앙값 예측
-            lane_center = right_center - self.right_to_center_dist
+        if left_cx and right_cx:
+            # 두 차선 모두 감지된 경우
+            lane_center = (left_cx + right_cx) / 2
+            self.prev_center = lane_center
+        elif right_cx:
+            # 오른쪽 차선만 감지된 경우 -> 왼쪽 차선을 대칭으로 생성
+            left_cx = w - right_cx
+            lane_center = (left_cx + right_cx) / 2
+            self.prev_center = lane_center
+        elif left_cx:
+            # 왼쪽 차선만 감지된 경우 -> 오른쪽 차선을 대칭으로 생성
+            right_cx = w - left_cx
+            lane_center = (left_cx + right_cx) / 2
+            self.prev_center = lane_center
         else:
-            # 모든 차선이 인식되지 않을 때 중앙 유지
-            lane_center = w / 2
+            # 차선이 전혀 감지되지 않을 경우 이전 중앙값 유지
+            lane_center = self.prev_center if self.prev_center else w / 2
 
-        # 에러 계산 (차선 중심과 이미지의 수평 중앙과의 차이)
-        self._delta = lane_center - (w / 2)
+        # 에러 계산
+        self._delta = lane_center - w / 2
 
         # 시각화
-        if left_center is not None:
-            cv2.line(img, (int(left_center), h), (int(left_center), 0), (255, 0, 0), 2)
-        if right_center is not None:
-            cv2.line(img, (int(right_center), h), (int(right_center), 0), (0, 255, 0), 2)
-        if lane_center is not None:
-            cv2.circle(img, (int(lane_center), h // 2), 10, (0, 0, 255), -1)
+        if left_cx:
+            cv2.line(img, (int(left_cx), h), (int(left_cx), 0), (255, 0, 0), 5)  # 파란선 (왼쪽 차선)
+        if right_cx:
+            cv2.line(img, (int(right_cx), h), (int(right_cx), 0), (0, 255, 0), 5)  # 초록선 (오른쪽 차선)
+        if lane_center:
+            cv2.circle(img, (int(lane_center), h // 2), 20, (0, 0, 255), -1)  # 중앙값
 
-        # 출력
+        # 화면 출력
         cv2.imshow("Camera View", img)
-        cv2.imshow("Mask View", mask)
+        cv2.imshow("Mask View", msk)
         cv2.waitKey(1)
 
     @property
     def delta(self):
         return self._delta
-

@@ -1,4 +1,4 @@
-material hillline
+material hill2
 {
   receive_shadows on
   technique
@@ -8,9 +8,8 @@ material hillline
       ambient 0.5 0.5 0.5 1.0
       texture_unit
       {
-        texture ./ros2_car_track_thick_lines.png
+        texture ./road2.png
       }
     }
   }
 }
-

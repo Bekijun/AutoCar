@@ -131,6 +131,94 @@
         </script>
     </actor>
 
+    <!-- 오르막길 -->
+    <model name="uphill">
+      <pose>89.1 -70 -4.52 0 -0.1 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>10 10 10</size> <!-- 오르막길의 크기 -->
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>10 10 10</size> <!-- 오르막길의 크기 -->
+            </box>
+          </geometry>
+          <material>
+        <script>
+              <uri> ./hill2.material </uri>  <!-- file://course.material -->
+              <name>hill2</name>
+            </script>
+
+      </material>
+
+        </visual>
+      </link>
+    </model>
+
+     <!-- 평평한 길 -->
+    <model name="flat">
+      <pose>96 -70 -4.05 0 0 0</pose> <!-- 오르막길 뒤에 평평한 길 배치 -->
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>5 10 10</size> <!-- 평평한 길의 크기 -->
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>5 10 10</size> <!-- 평평한 길의 크기 -->
+            </box>
+          </geometry>
+          <material>
+        <script>
+              <uri> ./hill.material </uri>  <!-- file://course.material -->
+              <name>hill</name>
+            </script>
+
+      </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- 내리막길 -->
+    <model name="downhill">
+      <pose>103 -70 -4.54 0 0.1 0</pose> <!-- 평평한 길 뒤에 내리막길 배치 -->
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>10 10 10</size> <!-- 내리막길의 크기 -->
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>10 10 10</size> <!-- 내리막길의 크기 -->
+            </box>
+          </geometry>
+          <material>
+        <script>
+              <uri> ./hill.material </uri>  <!-- file://course.material -->
+              <name>hill</name>
+            </script>
+
+      </material>
+        </visual>
+      </link>
+    </model>
+
 
   </world>
 </sdf>
