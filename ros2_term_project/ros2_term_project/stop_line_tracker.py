@@ -11,12 +11,12 @@ class StopLineTracker:
 
         # HSV 변환 및 흰색 정지선 마스크 생성
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        lower_white = np.array([0, 0, 200])  # 흰색 범위
-        upper_white = np.array([180, 30, 255])
+        lower_white = np.array([0, 0, 150])  # 흰색 감지 범위
+        upper_white = np.array([180, 60, 255])
         mask = cv2.inRange(hsv, lower_white, upper_white)
 
         # 관심 영역 (ROI) 설정 - 이미지 하단 영역만 사용
-        roi_top = int(h * 2.0 / 3)
+        roi_top = int(h * 1.3 / 3)
         mask[:roi_top, :] = 0
 
         # 열림 연산을 통해 작은 노이즈 제거
